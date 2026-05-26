@@ -1,0 +1,27 @@
+\documentclass[a4paper, 11pt]{article}
+
+\begin{document}
+
+I am a student of environmental engineering and one of my primary research interests is the coast, particularly coastal erosion.
+In California especially, we are very lucky to have a lot of data on the coast in the form of images.
+We of course have satellite data, which can be as fine as 1x1 meter for visible light and even less for synthetic aperture radar, but organizations like the USGS have been vigilant about collecting historical aerial imagery (as close to top-down orthogonal as possible) of our coasts as well.
+Finally, the California Coastal Records Project is a private endeavor collecting aerial imagery of our coasts at an angle.
+There is no shortage of data, our usual problem is processing it.
+My project aims to address this.
+
+Previous research I did for the California Coastal Commission required knowledge of the position of the backshore.
+This is where the beach gives way to a different, usually steeper, morphology (not necessarily where the water meets the land).
+In California this is often a rock face or a bluff, but can also be a dune.
+This was easier to derive from LiDAR point clouds I was working with, but on aerial imagery I had to label them by hand.
+That was fine for my case study of three sites over several decades, but if a more complete analysis was to be done of more sites over more time, a more robust, well-defined, and automatic technique would be necessary.
+That is my goal for this project: develop a computer vision program that can identify the position of the backshore from images of the coast.
+
+This project has the advantage of being expandable depending on how easy the work proves to be.
+At the very least, I would hope to derive backshore position from pairs of oblique images from the Coastal Records Project.
+This is doable using a difference map and finding where the slope goes from the gradual beach to the steep backshore.
+A next goal from there would be to derive the georeferenced position.
+This would require feature matching a georeferenced photo (likely aerial photography or satellite) against the oblique image.
+If georeferencing were possible, then I could take the backshore positions from multiple pairs of oblique images over time and compare them to find the rate at which the backshore is receding (or accreting).
+I already have access to all of the imagery required, and I've started working on deriving depth from a test pair of oblique images.
+
+\end{document}

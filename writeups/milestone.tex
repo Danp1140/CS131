@@ -1,0 +1,38 @@
+\documentclass[a4paper, 11pt]{article}
+
+\begin{document}
+TODO example figures
+TODO which photos did we test on
+
+This project has been quite unpredictable so far. 
+Techniques I had hoped would work well have been underwhelming or failed outright.
+
+My initial approach was a simple disparity map.
+I hoped to get some intrinsic variables, not only for stereo rectification but also to compute depth in physical units instead of pixels.
+I was able to learn the type of camera used for the pictures to get a sensor size, and had a presumed focal length from the lens they used, assuming it was fully zoomed in.
+I tried for some time to find a series of shots in the dataset that contained enough of a grid to do some calibration, but to no avail.
+Even without camera calibration to calculated specific depths, though, I could still create a disparity map with OpenCV's \verb|stereoRectifyUncalibrated| and interpret the results in pixels to find an area with low change in depth to call the backshore.
+However, trying this with SIFT keypoint matching, getting a fundamental matrix with \verb|findFundamentalMat| running RANSAC, provided lacking results.
+I spent (wasted) a lot of time tweaking variable, seeing if the apprach was valid but just needed some nudging.
+I changed my keypoint match distance ratio, tried various image downscaling factors, modified the RANSAC threshold, and, of course, played with SGBM's \verb|minDisparity|, \verb|numDisparities|, and \verb|blockSize| parameters.
+
+Interestingly, downscaling the image actually helped somewhat, I imagine it got rid of some repetitive patterns in the sand, grasses, and trees.
+Matching parameters like match distance ratio and RANSAC threshold didn't do much, the keypoints were mostly good and the rectification process seemed to work really well even without calibration.
+It all came down to adjusting the disparity map parameters.
+A higher block size was often beneficial. 
+Since we're looking for a large pattern from a big feature, we want more signal, less noise.
+However, it often just got too big, causing it to never match disparities leading to vertical artifacts.
+Setting minimum disparities and number of disparities had little effect.
+
+After a lot of time and effort, I decided to take a break on disparity maps and try a new approach.
+This is where my planned timeline really fell apart, since I didn't have a lot of back-up plans in mind.
+I turned to more complex structure from motion techniques, since I had a lot of high quality images to work with.
+Initially I tried OpenSFM but it was not working so I started using COLMAP and their python bindings PyCOLMAP.
+Using eight photos of the dunes near Fort Ord and COLMAP's incremental mapping algorithm, I was able to reconstruct TODO how many points in space.
+From these, though, you could only see a general surface, not nearly enough to discern the backshore.
+
+So, I turned instead to their stereo fusion algorithm.
+This is where things start to get a little out of my depth but at this point I will do anything to make this work.
+
+\end{document}
+
