@@ -10,9 +10,10 @@
 # 
 # Default parameters/operations that may be tweaked:
 # - Converted to grayscale
-# - Downscaled 0.1x
+# - Downscaled 0.5x
 # - Sift best to second-best ratio cutoff 0.75
 # - RANSAC threshold 5
+# - Disparity minDisp 16, numDisp 128, bSize 11
 
 
 import sys
@@ -21,7 +22,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 
-def prepImg(path, scale=0.1):
+def prepImg(path, scale=0.5):
     img = cv.imread(path)
     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     img = cv.resize(img, None, fx=scale, fy=scale, interpolation=cv.INTER_AREA)
@@ -61,7 +62,7 @@ def rectify(l, r, sift_ratio=0.75, ransac_ratio=5):
     success, H1, H2 = cv.stereoRectifyUncalibrated(p1, p2, F, l.shape[::-1], threshold=ransac_ratio)
     return H1, H2
 
-def disparity(l, r, minDisp=32, numDisp=512, bSize=63):
+def disparity(l, r, minDisp=16, numDisp=128, bSize=11):
     stereo = cv.StereoSGBM_create(minDisparity=minDisp, numDisparities=numDisp, blockSize=bSize)
     return stereo.compute(l, r).astype(np.float32)
 

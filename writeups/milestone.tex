@@ -1,11 +1,13 @@
 \documentclass[a4paper, 11pt]{article}
 
-\begin{document}
-TODO example figures
-TODO which photos did we test on
+\usepackage{graphicx, float, hyperref}
 
-This project has been quite unpredictable so far. 
-Techniques I had hoped would work well have been underwhelming or failed outright.
+\begin{document}
+Code and images referenced in this report can be found at \url{https://github.com/Danp1140/CS131}.
+
+I downloaded a subset of the CA Coastal Records Project data to set up the model on sites with which I was familiar.
+I grabbed four images taken in Half Moon Bay at Miramar Beach near Mirada Road in 2005, which is a partially armored bluff-backed portion of beach.
+I also got eight images taken near Monterey off the coast of Fort Ord, which is a tall dune-backed beach.
 
 My initial approach was a simple disparity map.
 I hoped to get some intrinsic variables, not only for stereo rectification but also to compute depth in physical units instead of pixels.
@@ -15,6 +17,11 @@ Even without camera calibration to calculated specific depths, though, I could s
 However, trying this with SIFT keypoint matching, getting a fundamental matrix with \verb|findFundamentalMat| running RANSAC, provided lacking results.
 I spent (wasted) a lot of time tweaking variable, seeing if the apprach was valid but just needed some nudging.
 I changed my keypoint match distance ratio, tried various image downscaling factors, modified the RANSAC threshold, and, of course, played with SGBM's \verb|minDisparity|, \verb|numDisparities|, and \verb|blockSize| parameters.
+
+Some results can be seen in Figures~\ref{fig:miramar} and~\ref{fig:ord} in the appendix at the end.
+In both images, which are the best I was able to produce, there are some moments of lucidity.
+In the Ord photo, you can even make out the face of the dune quite clearly in the disparity map.
+However, it is not nearly consistent enough, and any image processing to determine the backshore pixels from disparity gradients failed.
 
 Interestingly, downscaling the image actually helped somewhat, I imagine it got rid of some repetitive patterns in the sand, grasses, and trees.
 Matching parameters like match distance ratio and RANSAC threshold didn't do much, the keypoints were mostly good and the rectification process seemed to work really well even without calibration.
@@ -28,11 +35,62 @@ After a lot of time and effort, I decided to take a break on disparity maps and 
 This is where my planned timeline really fell apart, since I didn't have a lot of back-up plans in mind.
 I turned to more complex structure from motion techniques, since I had a lot of high quality images to work with.
 Initially I tried OpenSFM but it was not working so I started using COLMAP and their python bindings PyCOLMAP.
-Using eight photos of the dunes near Fort Ord and COLMAP's incremental mapping algorithm, I was able to reconstruct TODO how many points in space.
-From these, though, you could only see a general surface, not nearly enough to discern the backshore.
+Using eight photos of the dunes near Fort Ord and COLMAP's incremental mapping algorithm, I was able to reconstruct a point cloud.
+From these, though, it was difficult to make out the backshore.
+I'm still working on meshing these point clouds and projecting them from the perspective of one of the cameras to check if a depth map shows anything.
+One of these point clouds can be found in the appendix, Figure~\ref{fig:pc}.
 
-So, I turned instead to their stereo fusion algorithm.
-This is where things start to get a little out of my depth but at this point I will do anything to make this work.
+I'm not certain this sparse point cloud will give a good image of the backshore, so to get an even denser reconstruction I plan on using COLMAP's \verb|stereo_fusion| function.
+I had tried this years ago on similar data and gotten decent results so I have high confidence this will work, especially after I mesh it and render a depth map.
+The only hangup is that this requires CUDA support which my MacBook does not have, but I have access to a Linux machine that it works on.
+
+This is my main strategy going forward.
+As for a timeline, I'm hoping to have one working dense reconstruction from the Ord data by Tuesday, develop a script to label backshore pixels on Wednesday, then to run the script over all available years on Thursday.
+Assuming that all goes as planned, I will try to match the static parts of the images to get a rate of erosion on Friday.
+I have set aside the rest of the time until the presentation as flex time to make my slides, start drafting my report, and in case anything goes wrong.
+
+Honestly, if I can detect the backshore at all I consider it a win for a project on this timescale, but getting a rate of erosion would be amazing (even if it is not in a physical unit because I don't know all of the camera parameters).
+If things somehow go really fast I would do this at the Miramar site and at Carlsbad State beach as well (these are sites I worked with previously so I have LiDAR-derived erosion rates to compare to).
+This has been a major pivot from my original plan and is a fair bit more complex and takes a fair bit longer, but I'm confident that I'm back on track with a strategy that will work to serve my original goal of detecting the back of the beach fromphotographic data alone.
+
+\newpage
+\section*{Appendix}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\textwidth]{miramar_12_color.png}
+	\includegraphics[width=1\textwidth]{miramar_12_depth_0.5_16_128_11.png}
+	\caption{
+		Rectified images and depth map from images 1 and 2 of the 2013 Miramar dataset. 
+		The rectification process appears to have worked decently, with points lying on the same horizontal lines in the left and right images.
+		Note patches with clear gradients in the disparity map, where disparities have been well-found, as opposed to the noisy chunks in most places. 
+		Increasing the window too much more in an effort to get rid of the noise causes vertical streaking, I believe due to patches matching on the wrong rows.
+	}
+	\label{fig:miramar}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\textwidth]{ord_67_color.png}
+	\includegraphics[width=1\textwidth]{ord_67_depth_0.5_16_128_11.png}
+	\caption{
+		Rectified images and depth map from images 6 and 7 of the 2005 Ft. Ord dataset.
+		Same story as Miramar for the most part.
+		There is one large chunk of good disparity that lies right on the backshore that was encouraging, but I couldn't dial in the parameters to make it larger or more consistent.
+		Someday after this project is done I hope to come back to this, as I'd like to see if I can make this simpler approach work with more time.
+	}
+	\label{fig:ord}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\textwidth]{ord_pointcloud.png}
+	\caption{
+		Point cloud derived from a sparse structure from motion reconstruction of eight pictures from Ft. Ord.
+		The sharper slope of the backshore can be seen on the right.
+		The goal is to get a denser reconstruction, triangulate it, and project a depth map from the perspective of one of the cameras.
+	}
+	\label{fig:pc}
+\end{figure}
 
 \end{document}
 

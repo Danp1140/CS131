@@ -20,25 +20,10 @@ cols = np.array([p.color for p in recon.points3D.values()]).astype(np.float32) /
 pc = o3d.geometry.PointCloud()
 pc.points = o3d.utility.Vector3dVector(points)
 pc.colors = o3d.utility.Vector3dVector(cols)
-# o3d.visualization.draw_geometries([pc])
-
-pc = o3d.t.geometry.PointCloud.from_legacy(pc)
+pc.estimate_normals()
 
 intr = recon.image(1).camera.calibration_matrix()
 extr = recon.image(1).cam_from_world().matrix()
 extr = np.vstack((extr, [0, 0, 0, 1]))
-extr = np.linalg.inv(extr)
 
-print(intr)
-print(extr)
-
-depth = pc.project_to_depth_image(
-    800, 600, 
-    intr, extrinsics=extr, 
-    depth_scale=1, depth_max=1000000)
-
-plt.figure()
-plt.imshow(depth)
-
-plt.show()
-
+o3d.visualization.draw_geometries([pc])
